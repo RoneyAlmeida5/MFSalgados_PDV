@@ -1,0 +1,78 @@
+.Container {
+  background: linear-gradient(135deg, #00258a 0%, #0134a0 50%, #0e63ed 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.Card {
+  width: 450px;
+  background: linear-gradient(135deg, #e4e43a 0%, #1355cf 50%, #2c3b53 100%);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.Img {
+  background-size: cover;
+  width: 300px;
+  height: 270px;
+  align-items: center;
+  justify-content: center;
+}
+
+.InputContainer {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.Input {
+  width: 100%;
+  padding: 10px 10px 10px 40px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  border-color: #00258a;
+}
+
+.Icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.Icon_Pass {
+  position: absolute;
+  left: 420px;
+  top: 55%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.Btn {
+  background: linear-gradient(135deg, #2563eb, #1e3a8a);
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+  &:hover {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    transform: scale(1.01);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+  }
+}
