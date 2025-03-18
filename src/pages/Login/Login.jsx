@@ -27,7 +27,7 @@ export default function Login() {
       const token = response.data.access_token;
 
       if (!token) {
-        throw new error("access_token não recebido!");
+        throw new Error("access_token não recebido!");
       }
 
       // Salva o token no localStorage
@@ -50,9 +50,17 @@ export default function Login() {
       navigate("/caixamercadinho");
     } catch (err) {
       console.error("Erro no login:", err.response?.data || err.message);
-      setError(
-        err.response?.data?.message || "Erro ao fazer login. Tente novamente."
-      );
+
+      if (err.response && err.response.data && err.response.data.message) {
+        // Verifica se a mensagem de erro do backend é específica para senha incorreta
+        if (err.response.data.message === "Credenciais inválidas") {
+          setError("Senha incorreta. Tente novamente.");
+        } else {
+          setError(err.response.data.message); // Exibe a mensagem de erro do backend
+        }
+      } else {
+        setError("Erro ao fazer login. Tente novamente."); // Exibe mensagem de erro genérica
+      }
     }
   };
 
@@ -95,6 +103,8 @@ export default function Login() {
         <button className="Btn" onClick={handleLogin}>
           Entrar
         </button>
+        {error && <div className="error-message">{error}</div>}{" "}
+        {/* Exibe o erro se existir */}
       </div>
     </div>
   );
