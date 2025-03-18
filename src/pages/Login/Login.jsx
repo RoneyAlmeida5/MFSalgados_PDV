@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import axios from "axios";
+import api from "../../services/api";
 import { jwtDecode } from "jwt-decode";
 import logo from "../../assets/logo.png";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -16,16 +16,44 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    /* try {
-      const response = await axios.post("https://api.exemplo.com/auth/login", { email, password });
-      const token = response.data.token;
+    setError(""); // Limpa mensagens de erro anteriores
+
+    try {
+      const response = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      const token = response.data.access_token;
+
+      if (!token) {
+        throw new error("access_token não recebido!");
+      }
+
+      // Salva o token no localStorage
       localStorage.setItem("token", token);
+
+      // Decodifica o token para obter informações do usuário
       const user = jwtDecode(token);
       console.log("Usuário logado:", user);
-      navigate("/dashboard");
+
+      // Faz a requisição para buscar os dados do usuário autenticado
+      const userResponse = await api.get("/users", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Garantir que o token é enviado
+        },
+      });
+
+      console.log("Dados do usuário autenticado:", userResponse.data);
+
+      // Redireciona para a página desejada após o login
+      navigate("/caixamercadinho");
     } catch (err) {
-      setError("Credenciais inválidas. Tente novamente.");
-    } */
+      console.error("Erro no login:", err.response?.data || err.message);
+      setError(
+        err.response?.data?.message || "Erro ao fazer login. Tente novamente."
+      );
+    }
   };
 
   const [showPassword, setShowPassword] = useState(false);
@@ -64,7 +92,7 @@ export default function Login() {
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </span>
         </div>
-        <button className="Btn" onClick={() => navigate("/caixamercadinho")}>
+        <button className="Btn" onClick={handleLogin}>
           Entrar
         </button>
       </div>
