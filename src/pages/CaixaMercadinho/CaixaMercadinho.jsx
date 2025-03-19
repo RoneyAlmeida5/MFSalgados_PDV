@@ -1,22 +1,67 @@
 import "./CaixaMercadinho.css";
 import api from "../../services/api";
 import { Modal, Box, Button } from "@mui/material";
-
-import { useState } from "react";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+import { useState, useEffect, useCallback } from "react";
 import logo from "../../assets/logo.png";
+import { jwtDecode } from "jwt-decode";
 
 export default function CaixaMercadinho() {
-  const [produtosLista, setProdutosLista] = useState([]);
-  const [listProdOpen, setListProdOpen] = useState(false);
+  // ADICIONAR PRODUTOS
   const [produto, setProduto] = useState("");
   const [codigo, setCodigo] = useState("");
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [formaPagamento, setFormaPagamento] = useState("Dinheiro");
   const [adcProdOpen, setAdcProdOpen] = useState(false);
+  const [produtosLista, setProdutosLista] = useState([]);
+  const [listProdOpen, setListProdOpen] = useState(false);
+  // LISTA DE COMPRAS POR UUID
+  const [produtosCompra, setProdutosCompra] = useState([]);
+  const [uuidSelecionado, setUuidSelecionado] = useState("");
+  const [nameSelecionado, setNameSelecionado] = useState("");
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  // TOTAL DA COMPRA
+  const [total, setTotal] = useState(0);
+  const [quantidade, setQuantidade] = useState(1);
+  // FORMAS DE PAGAMENTO
+  const [formasPagamento, setFormasPagamento] = useState([]);
+  const [formaPagamento, setFormaPagamento] = useState(null);
 
-  // BUSCAR PRODUTOS NO BACK-END
+  // FUNÇÃO BUSCAR PRODUTOS PELO (UUID)
+  const buscarProdutoPorUuid = (uuid) => {
+    const produtoUuid = produtosLista.find(
+      (produtoUuid) => produtoUuid.uuid === uuid
+    );
+    setProdutoSelecionado(produtoUuid || null);
+  };
+  // FUNÇÃO BUSCAR PRODUTOS PELO (PRODUTO)
+  const buscarProdutoPorName = (name) => {
+    if (name) {
+      const produto = produtosLista.find((produto) => produto.name === name);
+      setProdutoSelecionado(produto || null);
+    } else {
+      setProdutoSelecionado(null);
+    }
+  };
+  // FUNÇÃO ADICIONAR PRODUTOS A COMPRA
+  const adicionarProdutoaCompra = () => {
+    if (!produtoSelecionado) {
+      alert("Selecione um produto antes de adicionar.");
+      return;
+    }
 
+    const novoProdutoCompra = {
+      ...produtoSelecionado,
+      quantidade: quantidade,
+    };
+
+    setProdutosCompra([...produtosCompra, novoProdutoCompra]);
+    setTotal(total + produtoSelecionado.value * quantidade); // Multiplica o valor pela quantidade
+    setQuantidade(1);
+  };
+
+  // FUNÇÃO BUSCAR PRODUTOS NO BACK-END
   const buscarProdutos = async () => {
     try {
       const token = localStorage.getItem("token"); // Ou outra forma de obter o token
@@ -33,11 +78,84 @@ export default function CaixaMercadinho() {
   };
 
   const handleOpenListProd = () => {
-    buscarProdutos();
     setListProdOpen(true);
   };
 
+  useEffect(() => {
+    const produtosSalvos = localStorage.getItem("produtosCompra");
+    if (produtosSalvos) {
+      setProdutosCompra(JSON.parse(produtosSalvos));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (Array.isArray(produtosCompra) && produtosCompra.length > 0) {
+      localStorage.setItem("produtosCompra", JSON.stringify(produtosCompra));
+    }
+  }, [produtosCompra]);
+
+  useEffect(() => {
+    buscarProdutos();
+  }, []);
+
   const handleCloseListProd = () => setListProdOpen(false);
+
+  // FORMAS DE PAGAMENTOS
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const response = await api.get("/payments");
+        setFormasPagamento(response.data);
+        if (response.data.length > 0) {
+          setFormaPagamento(response.data[0].id);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar formas de pagamento:", error);
+      }
+    };
+    fetchPayments();
+  }, []);
+  // FUNÇÃO PARA FINALIZAR VENDA
+  const finalizarVenda = async () => {
+    if (!formaPagamento || produtosCompra.length === 0) {
+      alert("Selecione uma forma de pagamento e adicione produtos à compra.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const user = jwtDecode(token);
+      const user_id = user.sub;
+
+      console.log("ID extraído do token:", user_id);
+
+      const venda = {
+        userId: user_id,
+        paymentId: formaPagamento,
+        produtos: produtosCompra.map((produto) => ({
+          uuid: produto.uuid,
+          quantity: produto.quantidade,
+          value: parseFloat(produto.value),
+        })),
+      };
+      console.log("Enviando dados para o backend:", venda);
+
+      await api.post("/sales/createSales", venda, {
+        // Alterar a rota para createSales
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      alert("Venda finalizada com sucesso!");
+      setProdutosCompra([]);
+      localStorage.removeItem("produtosCompra");
+      setTotal(0);
+    } catch (error) {
+      console.error("Erro ao finalizar venda:", error);
+      alert("Erro ao finalizar venda. Tente novamente.");
+    }
+  };
 
   // ESTADOS DOS BOTÕES DO MODAL
 
@@ -45,14 +163,16 @@ export default function CaixaMercadinho() {
   const handleCloseAdcProd = () => setAdcProdOpen(false);
 
   const adicionarProduto = async () => {
-    if (produto && valor && descricao) {
+    if (codigo && produto && valor) {
       try {
         const response = await api.post("/products", {
+          uuid: codigo,
           name: produto,
-          value: parseFloat(valor),
           description: descricao,
+          value: parseFloat(valor),
         });
         setProdutosLista([...produtosLista, response.data]); // Adiciona o produto retornado pela API
+        setCodigo("");
         setProduto("");
         setValor("");
         setDescricao("");
@@ -62,7 +182,19 @@ export default function CaixaMercadinho() {
     }
   };
 
-  const total = produtosLista.reduce((acc, item) => acc + item.valor, 0);
+  // CALCULAR O TOTAL DA COMPRA
+  const calcularTotal = useCallback(() => {
+    return produtosCompra.reduce((total, produto) => {
+      const valorNumerico = parseFloat(produto.value);
+      return isNaN(valorNumerico)
+        ? total
+        : total + valorNumerico * produto.quantidade; // Multiplica o valor pela quantidade
+    }, 0);
+  }, [produtosCompra]);
+
+  useEffect(() => {
+    setTotal(calcularTotal());
+  }, [produtosCompra, calcularTotal]);
 
   return (
     <div className="ContainerMerc">
@@ -113,7 +245,13 @@ export default function CaixaMercadinho() {
                 <h2>ADICIONAR PRODUTOS</h2>
                 <input
                   className="InputModalAdcProd"
-                  placeholder="Produtos"
+                  placeholder="Código"
+                  value={codigo}
+                  onChange={(e) => setCodigo(e.target.value)}
+                />
+                <input
+                  className="InputModalAdcProd"
+                  placeholder="Produto"
                   value={produto}
                   onChange={(e) => setProduto(e.target.value)}
                 />
@@ -130,7 +268,6 @@ export default function CaixaMercadinho() {
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
                 />
-
                 <button className="Btn" onClick={adicionarProduto}>
                   Adicionar
                 </button>
@@ -144,9 +281,10 @@ export default function CaixaMercadinho() {
             <div className="ScreenModalListProd">
               <div className="PainelModalListProd">
                 <h2>PRODUTOS</h2>
-                <div className="TableModalListProd">
+                <table className="TableModalListProd">
                   <thead>
                     <tr className="Tr">
+                      <th className="ThModelListProd">Código</th>
                       <th className="ThModelListProd">Produto</th>
                       <th className="ThModelListProd">Valor</th>
                       <th className="ThModelListProd">Descrição</th>
@@ -155,22 +293,18 @@ export default function CaixaMercadinho() {
                   <tbody>
                     {produtosLista.map((item, index) => (
                       <tr className="Tr" key={index}>
-                        <td className="TdCModelListProd">{item.name}</td>{" "}
-                        {/* Correção: item.name */}
+                        <td className="TdCModelListProd">{item.uuid}</td>
+                        <td className="TdModelListProd">{item.name}</td>
                         <td className="TdModelListProd">
                           {item.value !== undefined
                             ? `R$ ${parseFloat(item.value).toFixed(2)}`
                             : "Valor Indisponível"}
-                        </td>{" "}
-                        {/* Correção: item.value e conversão para número */}
-                        <td className="TdModelListProd">
-                          {item.description}
-                        </td>{" "}
-                        {/* Adicionado item.description */}
+                        </td>
+                        <td className="TdModelListProd">{item.description}</td>
                       </tr>
                     ))}
                   </tbody>
-                </div>
+                </table>
               </div>
             </div>
           </Box>
@@ -186,14 +320,16 @@ export default function CaixaMercadinho() {
                 <tr className="Tr">
                   <th className="Th">Código</th>
                   <th className="Th">Produto</th>
+                  <th className="Th">Quantidade</th>
                   <th className="Th">Valor</th>
                 </tr>
               </thead>
               <tbody>
-                {produtosLista.map((item, index) => (
+                {produtosCompra.map((item, index) => (
                   <tr className="Tr" key={index}>
-                    <td className="TdC">{item.name}</td>
-                    <td className="Td">{item.value}</td>
+                    <td className="TdC">{item.uuid}</td>
+                    <td className="Td">{item.name}</td>
+                    <td className="Td">{item.quantidade}</td>
                     <td className="Td">
                       {item.value !== undefined
                         ? `R$ ${parseFloat(item.value).toFixed(2)}`
@@ -213,24 +349,37 @@ export default function CaixaMercadinho() {
           <h2>Adicionar Produto</h2>
           <input
             className="InputMerc"
+            type="text"
             placeholder="Código"
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
+            value={uuidSelecionado}
+            onChange={(e) => {
+              setUuidSelecionado(e.target.value);
+              buscarProdutoPorUuid(e.target.value);
+            }}
           />
           <input
             className="InputMerc"
-            placeholder="Produto"
-            value={produto}
-            onChange={(e) => setProduto(e.target.value)}
+            type="number" // Use type="number" para permitir apenas números
+            placeholder="Quantidade"
+            value={quantidade}
+            onChange={(e) => setQuantidade(parseInt(e.target.value) || 1)} // Garante que a quantidade seja um número inteiro
           />
-          <input
-            className="InputMerc"
-            placeholder="Valor"
-            type="number"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
+          <Autocomplete
+            options={produtosLista.map((produto) => produto.name)}
+            value={nameSelecionado}
+            onChange={(event, newValue) => {
+              setNameSelecionado(newValue);
+              buscarProdutoPorName(newValue);
+            }}
+            renderInput={(params) => <TextField {...params} label="Produto" />}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                height: "48px",
+              },
+            }}
+            className="InputMercProd"
           />
-          <button className="Btn" onClick={adicionarProduto}>
+          <button className="Btn" onClick={adicionarProdutoaCompra}>
             Adicionar
           </button>
           <h2>Forma de Pagamento</h2>
@@ -239,14 +388,22 @@ export default function CaixaMercadinho() {
             value={formaPagamento}
             onChange={(e) => setFormaPagamento(e.target.value)}
           >
-            <option>Dinheiro</option>
-            <option>Cartão</option>
-            <option>PIX</option>
+            {formasPagamento.map((forma) => (
+              <option key={forma.id} value={forma.id}>
+                {forma.name}
+              </option>
+            ))}
           </select>
-          <button className="Btn" onClick={() => alert("Compra Finalizada!")}>
+          <button onClick={finalizarVenda} className="Btn">
             Finalizar Venda
           </button>
-          <button className="Btn" onClick={() => setProdutosLista([])}>
+          <button
+            className="Btn"
+            onClick={() => {
+              setProdutosCompra([]);
+              localStorage.removeItem("produtosCompra"); // Limpa os dados do localStorage
+            }}
+          >
             Cancelar Venda
           </button>
         </div>

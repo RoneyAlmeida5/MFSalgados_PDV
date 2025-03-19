@@ -9,7 +9,7 @@
     "@gluestack-ui/nativewind-utils": "^1.0.26",
     "@gluestack-ui/overlay": "^0.1.16",
     "@gluestack-ui/toast": "^1.0.8",
-    "@mui/material": "^6.4.6",
+    "@mui/material": "^6.4.8",
     "@nestjs/common": "^11.0.11",
     "@nestjs/core": "^11.0.11",
     "@nestjs/jwt": "^11.0.0",
@@ -21,14 +21,14 @@
     "lucide-react": "^0.475.0",
     "mysql2": "^3.13.0",
     "react": "^19.0.0",
+    "react-autocomplete": "^1.8.1",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-router": "^7.1.5",
     "react-scripts": "5.0.1",
     "react-ui-cards": "^3.1.0",
     "styled-components": "^6.1.15",
-    "typeorm": "^0.3.21",
-    "type": "module"
+    "typeorm": "^0.3.21"
   },
   "scripts": {
     "start": "react-scripts start",
