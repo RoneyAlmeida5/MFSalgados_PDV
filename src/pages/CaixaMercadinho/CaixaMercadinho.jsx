@@ -1,18 +1,27 @@
-import "./CaixaMercadinho.css";
-import api from "../../services/api";
-import { Modal, Box, Button } from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router";
 import logo from "../../assets/logo.png";
 import { jwtDecode } from "jwt-decode";
+import api from "../../services/api";
+import "./CaixaMercadinho.css";
+
+import { Modal, Box, Button, Tooltip } from "@mui/material";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
+import ReceiptIcon from "@mui/icons-material/Receipt";
+
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function CaixaMercadinho() {
+  const navigation = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  // CALCULAR TROCO
+  const [valorPago, setValorPago] = useState(0); // Valor pago pelo cliente
+  const [troco, setTroco] = useState(0); // Troco a ser dado
+  const [openTrocoModal, setOpenTrocoModal] = useState(false); // Controle de abertura do modal
   // ADICIONAR PRODUTOS
   const [produto, setProduto] = useState("");
   const [codigo, setCodigo] = useState("");
@@ -32,6 +41,25 @@ export default function CaixaMercadinho() {
   // FORMAS DE PAGAMENTO
   const [formasPagamento, setFormasPagamento] = useState([]);
   const [formaPagamento, setFormaPagamento] = useState(null);
+
+  // FUNÇÃO PARA TROCO
+  // ABRIR MODAL
+  const handleOpenTrocoModal = () => {
+    setOpenTrocoModal(true);
+  };
+  // FECHAR MODAL
+  const handleCloseTrocoModal = () => {
+    setTroco(0); // Zera o valor do troco ao fechar o modal
+    setOpenTrocoModal(false);
+  };
+  // CALCULAR TROCO
+  const calcularTroco = () => {
+    if (valorPago >= total) {
+      setTroco(valorPago - total);
+    } else {
+      alert("O valor pago é menor que o total da compra.");
+    }
+  };
 
   // FUNÇÃO BUSCAR PRODUTOS PELO (UUID)
   const buscarProdutoPorUuid = (uuid) => {
@@ -257,6 +285,132 @@ export default function CaixaMercadinho() {
           >
             Listar Produtos
           </Button>
+        </div>
+        <div>
+          {/* Botão para abrir o modal de troco */}
+          <Button
+            sx={{
+              padding: "12px",
+              backgroundColor: "#0056b3",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+              "&:hover": {
+                backgroundColor: "#004199",
+              },
+            }}
+            onClick={handleOpenTrocoModal}
+          >
+            Calcular Troco
+          </Button>
+
+          {/* Modal de Troco */}
+          <Modal
+            sx={{ padding: 2, width: 400, margin: "auto", top: "30%" }}
+            open={openTrocoModal}
+            onClose={handleCloseTrocoModal}
+          >
+            <Box
+              className="Box"
+              sx={{ padding: 2, width: 400, margin: "auto", top: "20%" }}
+            >
+              <div className="ScreenModalTroco">
+                <div className="PainelModalTroco">
+                  <div>
+                    <h1>Valor Pago</h1>
+                    <input
+                      className="InputModalTroco"
+                      type="number"
+                      value={valorPago}
+                      onChange={(e) => setValorPago(parseFloat(e.target.value))}
+                      fullWidth
+                      sx={{ marginBottom: 2 }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginTop: "10px",
+                      }}
+                    >
+                      <Button
+                        sx={{
+                          padding: "10px",
+                          backgroundColor: "#28a745",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "10px",
+                          cursor: "pointer",
+                          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                          "&:hover": {
+                            backgroundColor: "#218838",
+                          },
+                        }}
+                        onClick={calcularTroco}
+                      >
+                        Calcular Troco
+                      </Button>
+                    </div>
+                  </div>
+
+                  {troco > 0 && (
+                    <div style={{ marginTop: "10px" }}>
+                      <h3>Troco: R$ {troco.toFixed(2)}</h3>
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <Button
+                      sx={{
+                        padding: "10px",
+                        backgroundColor: "#dc3545",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                        "&:hover": {
+                          backgroundColor: "#c82333",
+                        },
+                      }}
+                      onClick={handleCloseTrocoModal}
+                    >
+                      Fechar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Box>
+          </Modal>
+        </div>
+        <div>
+          <Tooltip
+            title="Vendas"
+            arrow
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  fontSize: "1rem", // aumenta a fonte
+                  backgroundColor: "#333", // opcional
+                  color: "#fff", // opcional
+                  padding: "8px 12px", // mais espaço
+                },
+              },
+            }}
+          >
+            <button className="Btn_Sales" onClick={() => navigation("/sales")}>
+              <ReceiptIcon sx={{ fontSize: "30px", justifyItems: "center" }} />
+            </button>
+          </Tooltip>
         </div>
         {/* MODAL DE ADICIONAR PRODUTOS */}
         <Modal open={adcProdOpen} onClose={handleCloseAdcProd}>

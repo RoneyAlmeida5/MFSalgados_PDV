@@ -1,7 +1,10 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import "./SalesPage.css";
+import logo from "../../assets/logo.png";
 import api from "../../services/api";
+import { useNavigate } from "react-router";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Table,
   TableBody,
@@ -12,11 +15,13 @@ import {
   Paper,
   Typography,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 
 export default function SalesPage() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigate();
 
   useEffect(() => {
     async function fetchSales() {
@@ -35,13 +40,37 @@ export default function SalesPage() {
 
   return (
     <div className="ContainerSales">
+      <img src={logo} alt="Logo da marca" className="ImgSales" />
       <Typography
         style={{ color: "white", padding: "20px" }}
         variant="h4"
         gutterBottom
       >
-        Histórico de Vendas
+        HISTÓRICO DE VENDAS
       </Typography>
+      <div>
+        <Tooltip
+          title="Retornar ao caixa"
+          arrow
+          componentsProps={{
+            tooltip: {
+              sx: {
+                fontSize: "1rem", // aumenta a fonte
+                backgroundColor: "#333", // opcional
+                color: "#fff", // opcional
+                padding: "8px 12px", // mais espaço
+              },
+            },
+          }}
+        >
+          <button
+            className="Btn_Back"
+            onClick={() => navigation("/caixamercadinho")}
+          >
+            <ArrowBackIcon sx={{ fontSize: "30px", justifyItems: "center" }} />
+          </button>
+        </Tooltip>
+      </div>
 
       {loading ? (
         <div
@@ -56,7 +85,7 @@ export default function SalesPage() {
       ) : sales.length === 0 ? (
         <Typography
           variant="h6"
-          style={{ textAlign: "center", marginTop: "20px" }}
+          style={{ color: "white", textAlign: "center", marginTop: "20px" }}
         >
           Nenhuma venda encontrada.
         </Typography>
@@ -72,7 +101,13 @@ export default function SalesPage() {
         >
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: "#1e3a8" }}>
+              <TableRow
+                sx={{
+                  background:
+                    "linear-gradient(135deg, #0e63ed 0%, #0134a0 50%, #00258a 100%)",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2);",
+                }}
+              >
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>
                   ID da Venda
                 </TableCell>

@@ -16,6 +16,28 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start; /* Mantém o conteúdo no topo */
-  padding: 20px;
   font-family: "Montserrat", sans-serif;
+}
+
+.ImgSales {
+  margin: 0;
+  padding: 0;
+  opacity: initial;
+  width: 220px;
+  height: 190px;
+}
+
+.Btn_Back {
+  margin-left: 165vh;
+  background: #ffffff;
+  width: 68px;
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  cursor: pointer;
+  transition: transform 0.5s;
+}
+.Btn_Back:hover {
+  background-color: #bebebe;
+  transform: translateY(0.4em);
 }
