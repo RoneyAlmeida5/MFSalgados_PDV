@@ -4,6 +4,7 @@ import api from "../../services/api";
 import { jwtDecode } from "jwt-decode";
 import logo from "../../assets/logo.png";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import CircularProgress from "@mui/material/CircularProgress";
 import "./Login.css";
 
 import { Mail, Lock } from "lucide-react";
@@ -12,11 +13,14 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(""); // Limpa mensagens de erro anteriores
+    setIsLoading(true); // Ativa o loading
 
     try {
       const response = await api.post("/auth/login", {
@@ -46,8 +50,8 @@ export default function Login() {
 
       console.log("Dados do usuário autenticado:", userResponse.data);
 
-      // Redireciona para a página desejada após o login
-      navigate("/caixamercadinho");
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay de 1s
+      navigate("/caixamercadinho"); // Redireciona após login
     } catch (err) {
       console.error("Erro no login:", err.response?.data || err.message);
 
@@ -61,6 +65,8 @@ export default function Login() {
       } else {
         setError("Erro ao fazer login. Tente novamente."); // Exibe mensagem de erro genérica
       }
+    } finally {
+      setIsLoading(false); // Desativa o loading
     }
   };
 
@@ -100,11 +106,15 @@ export default function Login() {
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </span>
         </div>
-        <button className="Btn" onClick={handleLogin}>
-          Entrar
+        <button className="Btn" onClick={handleLogin} disabled={isLoading}>
+          {isLoading ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            "Entrar"
+          )}
         </button>
-        {error && <div className="error-message">{error}</div>}{" "}
-        {/* Exibe o erro se existir */}
+
+        {error && <div className="error-message">{error}</div>}
       </div>
     </div>
   );

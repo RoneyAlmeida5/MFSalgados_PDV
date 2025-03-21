@@ -6,8 +6,13 @@ import TextField from "@mui/material/TextField";
 import { useState, useEffect, useCallback } from "react";
 import logo from "../../assets/logo.png";
 import { jwtDecode } from "jwt-decode";
+import CircularProgress from "@mui/material/CircularProgress";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function CaixaMercadinho() {
+  const [isLoading, setIsLoading] = useState(false);
   // ADICIONAR PRODUTOS
   const [produto, setProduto] = useState("");
   const [codigo, setCodigo] = useState("");
@@ -117,6 +122,7 @@ export default function CaixaMercadinho() {
   }, []);
   // FUNÇÃO PARA FINALIZAR VENDA
   const finalizarVenda = async () => {
+    setIsLoading(true); // Ativa o loading
     if (!formaPagamento || produtosCompra.length === 0) {
       alert("Selecione uma forma de pagamento e adicione produtos à compra.");
       return;
@@ -140,6 +146,7 @@ export default function CaixaMercadinho() {
       };
       console.log("Enviando dados para o backend:", venda);
 
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       await api.post("/sales/createSales", venda, {
         // Alterar a rota para createSales
         headers: {
@@ -147,13 +154,27 @@ export default function CaixaMercadinho() {
         },
       });
 
-      alert("Venda finalizada com sucesso!");
+      toast.success("🛒 Venda finalizada com sucesso!", {
+        position: "top-right",
+        autoClose: 3000, // Fecha após 3 segundos
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      });
       setProdutosCompra([]);
       localStorage.removeItem("produtosCompra");
       setTotal(0);
     } catch (error) {
-      console.error("Erro ao finalizar venda:", error);
+      toast.error("❌ Erro ao finalizar a venda!", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+      });
       alert("Erro ao finalizar venda. Tente novamente.");
+    } finally {
+      setIsLoading(false); // Desativa o loading
     }
   };
 
@@ -394,8 +415,12 @@ export default function CaixaMercadinho() {
               </option>
             ))}
           </select>
-          <button onClick={finalizarVenda} className="Btn">
-            Finalizar Venda
+          <button className="Btn" disabled={isLoading} onClick={finalizarVenda}>
+            {isLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Finalizar Venda"
+            )}
           </button>
           <button
             className="Btn"
@@ -408,6 +433,7 @@ export default function CaixaMercadinho() {
           </button>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 }

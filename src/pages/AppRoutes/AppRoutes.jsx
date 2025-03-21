@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import Login from "../Login/Login";
 import CaixaMercadinho from "../CaixaMercadinho/CaixaMercadinho";
+import SalesPage from "../SalesPage/SalesPage";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -17,6 +18,14 @@ const AppRoutes = () => {
           element={
             <PrivateRoute>
               <CaixaMercadinho />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sales"
+          element={
+            <PrivateRoute>
+              <SalesPage />
             </PrivateRoute>
           }
         />
