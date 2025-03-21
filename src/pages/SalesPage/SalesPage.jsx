@@ -42,11 +42,19 @@ export default function SalesPage() {
     <div className="ContainerSales">
       <img src={logo} alt="Logo da marca" className="ImgSales" />
       <Typography
-        style={{ color: "white", padding: "20px" }}
         variant="h4"
         gutterBottom
+        style={{
+          color: "white",
+          padding: "20px",
+          fontFamily: "Montserrat, sans-serif", // Fonte moderna
+          fontWeight: 400, // Peso da fonte leve
+          letterSpacing: "0.1em", // Espaçamento entre letras
+          textTransform: "uppercase", // Transformação do texto
+          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)", // Sombra do texto
+        }}
       >
-        HISTÓRICO DE VENDAS
+        Histórico de Vendas
       </Typography>
       <div>
         <Tooltip
@@ -135,7 +143,8 @@ export default function SalesPage() {
                     <TableRow
                       key={`${sale.id}-${subIndex}`}
                       sx={{
-                        backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
+                        backgroundColor:
+                          index % 2 === 0 ? "#0044ff56" : "white",
                       }}
                     >
                       <TableCell>{sale.id}</TableCell>

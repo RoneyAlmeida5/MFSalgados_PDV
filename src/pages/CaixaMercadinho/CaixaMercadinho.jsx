@@ -10,6 +10,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
 import ReceiptIcon from "@mui/icons-material/Receipt";
+import CalculateIcon from "@mui/icons-material/Calculate";
 
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
@@ -18,6 +19,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default function CaixaMercadinho() {
   const navigation = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [caixaAberto, setCaixaAberto] = useState(false);
   // CALCULAR TROCO
   const [valorPago, setValorPago] = useState(0); // Valor pago pelo cliente
   const [troco, setTroco] = useState(0); // Troco a ser dado
@@ -41,6 +43,12 @@ export default function CaixaMercadinho() {
   // FORMAS DE PAGAMENTO
   const [formasPagamento, setFormasPagamento] = useState([]);
   const [formaPagamento, setFormaPagamento] = useState(null);
+
+  // CAIXA ABERTO OU FECHADO
+  useEffect(() => {
+    // Atualiza o estado do caixa com base na presença de produtos no carrinho
+    setCaixaAberto(produtosCompra.length > 0);
+  }, [produtosCompra]);
 
   // FUNÇÃO PARA TROCO
   // ABRIR MODAL
@@ -184,7 +192,7 @@ export default function CaixaMercadinho() {
 
       toast.success("🛒 Venda finalizada com sucesso!", {
         position: "top-right",
-        autoClose: 3000, // Fecha após 3 segundos
+        autoClose: 4000, // Fecha após 3 segundos
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -245,9 +253,28 @@ export default function CaixaMercadinho() {
     setTotal(calcularTotal());
   }, [produtosCompra, calcularTotal]);
 
+  // CALCULAR O TOTAL DA COMPRA
+  const cancelarVenda = () => {
+    setProdutosCompra([]);
+    localStorage.removeItem("produtosCompra");
+    toast.success("🛒 Venda cancelada com sucesso!", {
+      // Exibe o toast
+      position: "top-right",
+      autoClose: 4000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+    });
+  };
+
   return (
     <div className="ContainerMerc">
       <img src={logo} alt="Logo da marca" className="ImgMerc" />
+      <div className="CardBox">
+        {caixaAberto ? <h2>CAIXA ABERTO</h2> : <h2>CAIXA FECHADO</h2>}
+      </div>
       {/* BOTÕES DO MODAL */}
       <div className="ScrollContainer">
         <Button
@@ -287,109 +314,105 @@ export default function CaixaMercadinho() {
           </Button>
         </div>
         <div>
-          {/* Botão para abrir o modal de troco */}
-          <Button
-            sx={{
-              padding: "12px",
-              backgroundColor: "#0056b3",
-              color: "white",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-              "&:hover": {
-                backgroundColor: "#004199",
+          <Tooltip
+            title="Calcular troco"
+            arrow
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  fontSize: "1rem",
+                  backgroundColor: "#333",
+                  color: "#fff",
+                  padding: "8px 12px",
+                },
               },
             }}
-            onClick={handleOpenTrocoModal}
           >
-            Calcular Troco
-          </Button>
+            <Button
+              sx={{
+                padding: "9px",
+                backgroundColor: "#00b11b",
+                color: "white",
+                border: "none",
+                borderRadius: "10px",
+                cursor: "pointer",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                transition: "transform 0.5s",
+                "&:hover": {
+                  backgroundColor: "#007e13",
+                  transform: "translateY(0.6em)",
+                },
+              }}
+              onClick={handleOpenTrocoModal}
+            >
+              <CalculateIcon
+                sx={{ fontSize: "30px", justifyItems: "center" }}
+              />
+            </Button>
+          </Tooltip>
 
           {/* Modal de Troco */}
-          <Modal
-            sx={{ padding: 2, width: 400, margin: "auto", top: "30%" }}
-            open={openTrocoModal}
-            onClose={handleCloseTrocoModal}
-          >
-            <Box
-              className="Box"
-              sx={{ padding: 2, width: 400, margin: "auto", top: "20%" }}
-            >
+          <Modal open={openTrocoModal} onClose={handleCloseTrocoModal}>
+            <div className="BoxTroco">
               <div className="ScreenModalTroco">
                 <div className="PainelModalTroco">
-                  <div>
-                    <h1>Valor Pago</h1>
-                    <input
-                      className="InputModalTroco"
-                      type="number"
-                      value={valorPago}
-                      onChange={(e) => setValorPago(parseFloat(e.target.value))}
-                      fullWidth
-                      sx={{ marginBottom: 2 }}
-                    />
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        marginTop: "10px",
-                      }}
-                    >
-                      <Button
-                        sx={{
-                          padding: "10px",
-                          backgroundColor: "#28a745",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "10px",
-                          cursor: "pointer",
-                          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                          "&:hover": {
-                            backgroundColor: "#218838",
-                          },
-                        }}
-                        onClick={calcularTroco}
-                      >
-                        Calcular Troco
-                      </Button>
-                    </div>
-                  </div>
+                  <h1>Valor Pago</h1>
+                  <input
+                    className="InputModalTroco"
+                    type="number"
+                    value={valorPago}
+                    onChange={(e) => setValorPago(parseFloat(e.target.value))}
+                    fullWidth
+                    sx={{ marginBottom: 2 }}
+                  />
+                  <Button
+                    sx={{
+                      padding: "10px",
+                      backgroundColor: "#0e63ed",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                      "&:hover": {
+                        backgroundColor: "#00258a",
+                      },
+                    }}
+                    onClick={calcularTroco}
+                  >
+                    Calcular Troco
+                  </Button>
 
                   {troco > 0 && (
-                    <div style={{ marginTop: "10px" }}>
-                      <h3>Troco: R$ {troco.toFixed(2)}</h3>
-                    </div>
+                    <h3 style={{ marginTop: "10px" }}>
+                      Troco:{" "}
+                      <h1 style={{ color: "#00be43db", marginBottom: "-10px" }}>
+                        R$ {troco.toFixed(2)}
+                      </h1>
+                    </h3>
                   )}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
+
+                  <Button
+                    sx={{
+                      padding: "10px",
+                      backgroundColor: "#dc3545",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
                       marginTop: "10px",
+                      "&:hover": {
+                        backgroundColor: "#c82333",
+                      },
                     }}
+                    onClick={handleCloseTrocoModal}
                   >
-                    <Button
-                      sx={{
-                        padding: "10px",
-                        backgroundColor: "#dc3545",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "10px",
-                        cursor: "pointer",
-                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                        "&:hover": {
-                          backgroundColor: "#c82333",
-                        },
-                      }}
-                      onClick={handleCloseTrocoModal}
-                    >
-                      Fechar
-                    </Button>
-                  </div>
+                    Fechar
+                  </Button>
                 </div>
               </div>
-            </Box>
+            </div>
           </Modal>
         </div>
         <div>
@@ -412,6 +435,7 @@ export default function CaixaMercadinho() {
             </button>
           </Tooltip>
         </div>
+
         {/* MODAL DE ADICIONAR PRODUTOS */}
         <Modal open={adcProdOpen} onClose={handleCloseAdcProd}>
           <Box className="Box">
@@ -576,13 +600,7 @@ export default function CaixaMercadinho() {
               "Finalizar Venda"
             )}
           </button>
-          <button
-            className="Btn"
-            onClick={() => {
-              setProdutosCompra([]);
-              localStorage.removeItem("produtosCompra"); // Limpa os dados do localStorage
-            }}
-          >
+          <button className="Btn" onClick={cancelarVenda}>
             Cancelar Venda
           </button>
         </div>
