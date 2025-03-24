@@ -9,6 +9,14 @@ body {
   width: 100%;
 }
 
+.ScrollContainerSales {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 88%;
+  gap: 10px;
+}
+
 .ContainerSales {
   min-height: 100vh; /* Faz com que o fundo ocupe a altura total da tela */
   background: linear-gradient(135deg, #00258a 0%, #0134a0 50%, #0e63ed 100%);
@@ -28,7 +36,6 @@ body {
 }
 
 .Btn_Back {
-  margin-left: 165vh;
   background: #ffffff;
   width: 68px;
   height: 48px;

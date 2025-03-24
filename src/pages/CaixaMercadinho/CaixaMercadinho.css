@@ -3,15 +3,45 @@
 }
 /* ESTILIZAÇÃO DO CAIXA ABERTO */
 .CardBox {
-  width: 190px;
-  height: 254px;
-  background: rgb(223, 225, 235);
+  height: 50px;
   border-radius: 50px;
   box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
     rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
     rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px,
     rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
     rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
+  flex-grow: 1;
+  width: auto;
+  min-width: 150px;
+}
+.TextBox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  margin: 1rem 0;
+}
+.CardBox.Box_Open {
+  background-color: rgb(0, 195, 0); /* Cor verde para caixa aberta */
+  color: white; /* Cor do texto branco para melhor contraste */
+  transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+  transition-delay: 0.1s;
+  transform: translateY(-20%);
+  opacity: 0.98;
+}
+
+.CardBox.Box_Close {
+  background-color: rgb(255, 57, 57); /* Cor vermelha para caixa fechada */
+  color: white; /* Cor do texto branco para melhor contraste */
+  transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+  transition-delay: 0.05s;
+  transform: translateY(-0%);
+  opacity: 0.6;
 }
 /* ESTILIZAÇÃO DO MODAL */
 /* BOTÃO DE VENDAS */
@@ -57,13 +87,11 @@
   color: black;
   border-radius: 15px;
 }
-
 .PainelModalTroco {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .InputModalTroco {
   opacity: 0.5;
   padding: 10px;
@@ -74,7 +102,6 @@
   margin-bottom: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
-
 .PainelModalTroco h1 {
   font-family: "Montserrat", sans-serif;
   font-weight: 600;
@@ -84,7 +111,6 @@
   margin: 1rem 0;
   text-align: center;
 }
-
 .PainelModalTroco h3 {
   font-family: "Montserrat", sans-serif;
   font-weight: 600;
@@ -94,7 +120,6 @@
   margin: 1rem 0;
   text-align: center;
 }
-
 .BoxTroco {
   padding: 5px;
   position: absolute;
@@ -106,7 +131,6 @@
   border-radius: 15px;
   animation: fadeIn 0.3s ease-in-out forwards;
 }
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -150,7 +174,15 @@
   margin-bottom: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
-/* FIM DO MODAL DE ADICIONAL PRODUTO*/
+p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 17px;
+  color: #ff1d1d;
+  margin-bottom: 5px;
+}
 
 /* INICIO DO MODAL DE LISTA DE PRODUTOS*/
 .ScreenModalListProd {
@@ -211,33 +243,33 @@
   border: 1px solid #000000;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
-/* FIM DO MODAL DE LISTA DE PRODUTOS*/
 
-.ContainerMerc {
-  overflow-y: auto;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: linear-gradient(135deg, #00258a 0%, #0134a0 50%, #0e63ed 100%);
-  font-family: Arial, sans-serif;
+/* PAINEL LEFT */
+.Btn_Delete {
+  background-color: transparent;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  cursor: pointer;
+  transition: transform 0.5s;
 }
-
-.ImgMerc {
-  width: 330px;
-  height: 250px;
+.Btn_Delete:hover {
+  background-color: #ffb1b1;
+  transform: translateY(0.1em);
 }
-
-.ScrollContainer {
-  display: flex;
-  justify-content: end;
-  width: 81%;
-  white-space: nowrap;
-  padding: 3px;
-  gap: 10px;
-  margin-bottom: 10px;
+.Td_Delete {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #000;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
-
+.Th_Delete {
+  background: #0056b3;
+  border: 1px solid #000;
+  width: 100px;
+  color: white;
+  padding: 10px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
 .Screen {
   display: flex;
   flex-direction: row;
@@ -250,14 +282,6 @@
   color: black;
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
 }
-
-.RightPanel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .LeftPanel {
   flex: 2;
   background: #0040992b;
@@ -265,11 +289,81 @@
   border-radius: 8px;
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
 }
+.TableMerc {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  align-items: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+.Th {
+  background: #0056b3;
+  border: 1px solid #000;
+  width: 1700px;
+  color: white;
+  padding: 10px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.TdC {
+  border-bottom: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #000;
+  font-weight: bold;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.Td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #000;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.TotalMerc {
+  position: fixed;
+  bottom: 3%;
+  right: 80%;
+  background-color: #044299e0;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 25px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
 
+/* PAINEL RIGHT */
+.ContainerMerc {
+  overflow-y: auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, #00258a 0%, #0134a0 50%, #0e63ed 100%);
+  font-family: Arial, sans-serif;
+}
+.ImgMerc {
+  width: 330px;
+  height: 250px;
+}
+.ScrollContainer {
+  display: flex;
+  align-items: flex-end; /* Alinha os elementos à direita */
+  justify-content: flex-start; /* Alinha os elementos no topo */
+  width: 81%;
+  white-space: nowrap;
+  padding: 3px;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.RightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .LeftPanel h2 {
   padding-bottom: 10px;
 }
-
 .SelectMerc {
   padding: 11px;
   border: 2px solid #536ffc;
@@ -288,7 +382,6 @@
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
   }
 }
-
 .Btn {
   padding: 12px;
   background-color: #004199;
@@ -304,40 +397,6 @@
     background-color: #0056b3;
   }
 }
-
-.TableMerc {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  align-items: center;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.Th {
-  background: #0056b3;
-  border: 1px solid #000;
-  width: 1700px;
-  color: white;
-  padding: 10px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.TdC {
-  border-bottom: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-  border: 1px solid #000;
-  font-weight: bold;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.Td {
-  padding: 10px;
-  text-align: left;
-  border: 1px solid #000;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-}
-
 .InputMerc {
   width: 94%;
   padding: 16px;
@@ -347,7 +406,6 @@
   margin-bottom: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
-
 .InputMercProd {
   width: 100%;
   padding: 2px;
@@ -355,18 +413,5 @@
   border-radius: 6px;
   font-size: 16px;
   margin-bottom: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.TotalMerc {
-  position: fixed;
-  bottom: 3%;
-  right: 80%;
-  background-color: #044299e0;
-  color: white;
-  padding: 15px 25px;
-  border-radius: 25px;
-  font-size: 1.5rem;
-  font-weight: bold;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }

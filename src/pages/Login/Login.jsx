@@ -113,7 +113,6 @@ export default function Login() {
             "Entrar"
           )}
         </button>
-
         {error && <div className="error-message">{error}</div>}
       </div>
     </div>

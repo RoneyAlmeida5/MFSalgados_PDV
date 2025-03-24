@@ -11,6 +11,7 @@ import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import CalculateIcon from "@mui/icons-material/Calculate";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
@@ -20,12 +21,9 @@ export default function CaixaMercadinho() {
   const navigation = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [caixaAberto, setCaixaAberto] = useState(false);
-  // CALCULAR TROCO
-  const [valorPago, setValorPago] = useState(0); // Valor pago pelo cliente
-  const [troco, setTroco] = useState(0); // Troco a ser dado
-  const [openTrocoModal, setOpenTrocoModal] = useState(false); // Controle de abertura do modal
   // ADICIONAR PRODUTOS
   const [produto, setProduto] = useState("");
+  const [produtoDuplicado, setProdutoDuplicado] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -37,12 +35,16 @@ export default function CaixaMercadinho() {
   const [uuidSelecionado, setUuidSelecionado] = useState("");
   const [nameSelecionado, setNameSelecionado] = useState("");
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
-  // TOTAL DA COMPRA
-  const [total, setTotal] = useState(0);
-  const [quantidade, setQuantidade] = useState(1);
+  // CALCULAR TROCO
+  const [valorPago, setValorPago] = useState(0); // Valor pago pelo cliente
+  const [troco, setTroco] = useState(0); // Troco a ser dado
+  const [openTrocoModal, setOpenTrocoModal] = useState(false); // Controle de abertura do modal
   // FORMAS DE PAGAMENTO
   const [formasPagamento, setFormasPagamento] = useState([]);
   const [formaPagamento, setFormaPagamento] = useState(null);
+  // TOTAL DA COMPRA
+  const [total, setTotal] = useState(0);
+  const [quantidade, setQuantidade] = useState(1);
 
   // CAIXA ABERTO OU FECHADO
   useEffect(() => {
@@ -50,17 +52,64 @@ export default function CaixaMercadinho() {
     setCaixaAberto(produtosCompra.length > 0);
   }, [produtosCompra]);
 
-  // FUNÇÃO PARA TROCO
-  // ABRIR MODAL
+  // MODAL ADICIONAR PRODUTOS
+  const handleOpenAdcProd = () => setAdcProdOpen(true);
+  const handleCloseAdcProd = () => setAdcProdOpen(false);
+  const adicionarProduto = async () => {
+    if (codigo && produto && valor) {
+      try {
+        const response = await api.post("/products", {
+          uuid: codigo,
+          name: produto,
+          description: descricao,
+          value: parseFloat(valor),
+        });
+        setProdutosLista([...produtosLista, response.data]); // Adiciona o produto retornado pela API
+        setCodigo("");
+        setProduto("");
+        setValor("");
+        setDescricao("");
+      } catch (error) {
+        console.error("Erro ao adicionar produto:", error);
+      }
+    }
+  };
+  // PRODUTO DUPLICADO (ERRO)
+  useEffect(() => {
+    const produtoJaExiste = produtosLista.some(
+      (produto) => produto.uuid === codigo
+    );
+    setProdutoDuplicado(produtoJaExiste);
+  }, [codigo, produtosLista]);
+
+  // MODAL LISTA DE PRODUTOS
+  const handleCloseListProd = () => setListProdOpen(false);
+  const handleOpenListProd = () => {
+    setListProdOpen(true);
+  };
+  useEffect(() => {
+    const produtosSalvos = localStorage.getItem("produtosCompra");
+    if (produtosSalvos) {
+      setProdutosCompra(JSON.parse(produtosSalvos));
+    }
+  }, []);
+  useEffect(() => {
+    if (Array.isArray(produtosCompra) && produtosCompra.length > 0) {
+      localStorage.setItem("produtosCompra", JSON.stringify(produtosCompra));
+    }
+  }, [produtosCompra]);
+  useEffect(() => {
+    buscarProdutos();
+  }, []);
+
+  // MODAL TROCO
   const handleOpenTrocoModal = () => {
     setOpenTrocoModal(true);
   };
-  // FECHAR MODAL
   const handleCloseTrocoModal = () => {
     setTroco(0); // Zera o valor do troco ao fechar o modal
     setOpenTrocoModal(false);
   };
-  // CALCULAR TROCO
   const calcularTroco = () => {
     if (valorPago >= total) {
       setTroco(valorPago - total);
@@ -69,14 +118,28 @@ export default function CaixaMercadinho() {
     }
   };
 
-  // FUNÇÃO BUSCAR PRODUTOS PELO (UUID)
+  // FUNÇÃO BUSCAR PRODUTOS PELO (UUID & NAME PRODUTO)
+  // FUNÇÃO BUSCAR PRODUTOS NO BACK-END
+  const buscarProdutos = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Ou outra forma de obter o token
+      const response = await api.get("/products", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho
+        },
+      });
+      console.log(response.data); // Verifique os dados aqui
+      setProdutosLista(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar produtos:", error);
+    }
+  };
   const buscarProdutoPorUuid = (uuid) => {
     const produtoUuid = produtosLista.find(
       (produtoUuid) => produtoUuid.uuid === uuid
     );
     setProdutoSelecionado(produtoUuid || null);
   };
-  // FUNÇÃO BUSCAR PRODUTOS PELO (PRODUTO)
   const buscarProdutoPorName = (name) => {
     if (name) {
       const produto = produtosLista.find((produto) => produto.name === name);
@@ -85,7 +148,8 @@ export default function CaixaMercadinho() {
       setProdutoSelecionado(null);
     }
   };
-  // FUNÇÃO ADICIONAR PRODUTOS A COMPRA
+
+  // FUNÇÃO ADICIONAR PRODUTOS AO CARRINHO
   const adicionarProdutoaCompra = () => {
     if (!produtoSelecionado) {
       alert("Selecione um produto antes de adicionar.");
@@ -102,44 +166,14 @@ export default function CaixaMercadinho() {
     setQuantidade(1);
   };
 
-  // FUNÇÃO BUSCAR PRODUTOS NO BACK-END
-  const buscarProdutos = async () => {
-    try {
-      const token = localStorage.getItem("token"); // Ou outra forma de obter o token
-      const response = await api.get("/products", {
-        headers: {
-          Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho
-        },
-      });
-      console.log(response.data); // Verifique os dados aqui
-      setProdutosLista(response.data);
-    } catch (error) {
-      console.error("Erro ao buscar produtos:", error);
-    }
+  // FUNÇÃO PARA DELETAR PRODUTO DO CARRINHO
+  const removerProdutoDoCarrinho = (idProduto) => {
+    const produtosAtualizados = produtosCompra.filter(
+      (produto) => produto.uuid !== idProduto
+    );
+    setProdutosCompra(produtosAtualizados);
+    localStorage.setItem("produtosCompra", JSON.stringify(produtosAtualizados));
   };
-
-  const handleOpenListProd = () => {
-    setListProdOpen(true);
-  };
-
-  useEffect(() => {
-    const produtosSalvos = localStorage.getItem("produtosCompra");
-    if (produtosSalvos) {
-      setProdutosCompra(JSON.parse(produtosSalvos));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (Array.isArray(produtosCompra) && produtosCompra.length > 0) {
-      localStorage.setItem("produtosCompra", JSON.stringify(produtosCompra));
-    }
-  }, [produtosCompra]);
-
-  useEffect(() => {
-    buscarProdutos();
-  }, []);
-
-  const handleCloseListProd = () => setListProdOpen(false);
 
   // FORMAS DE PAGAMENTOS
   useEffect(() => {
@@ -156,6 +190,36 @@ export default function CaixaMercadinho() {
     };
     fetchPayments();
   }, []);
+
+  // CALCULAR O TOTAL DA COMPRA
+  const calcularTotal = useCallback(() => {
+    return produtosCompra.reduce((total, produto) => {
+      const valorNumerico = parseFloat(produto.value);
+      return isNaN(valorNumerico)
+        ? total
+        : total + valorNumerico * produto.quantidade; // Multiplica o valor pela quantidade
+    }, 0);
+  }, [produtosCompra]);
+  useEffect(() => {
+    setTotal(calcularTotal());
+  }, [produtosCompra, calcularTotal]);
+
+  // CANCELAR VENDA
+  const cancelarVenda = () => {
+    setProdutosCompra([]);
+    localStorage.removeItem("produtosCompra");
+    toast.success("🛒 Venda cancelada com sucesso!", {
+      // Exibe o toast
+      position: "top-right",
+      autoClose: 4000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+    });
+  };
+
   // FUNÇÃO PARA FINALIZAR VENDA
   const finalizarVenda = async () => {
     setIsLoading(true); // Ativa o loading
@@ -214,69 +278,18 @@ export default function CaixaMercadinho() {
     }
   };
 
-  // ESTADOS DOS BOTÕES DO MODAL
-
-  const handleOpenAdcProd = () => setAdcProdOpen(true);
-  const handleCloseAdcProd = () => setAdcProdOpen(false);
-
-  const adicionarProduto = async () => {
-    if (codigo && produto && valor) {
-      try {
-        const response = await api.post("/products", {
-          uuid: codigo,
-          name: produto,
-          description: descricao,
-          value: parseFloat(valor),
-        });
-        setProdutosLista([...produtosLista, response.data]); // Adiciona o produto retornado pela API
-        setCodigo("");
-        setProduto("");
-        setValor("");
-        setDescricao("");
-      } catch (error) {
-        console.error("Erro ao adicionar produto:", error);
-      }
-    }
-  };
-
-  // CALCULAR O TOTAL DA COMPRA
-  const calcularTotal = useCallback(() => {
-    return produtosCompra.reduce((total, produto) => {
-      const valorNumerico = parseFloat(produto.value);
-      return isNaN(valorNumerico)
-        ? total
-        : total + valorNumerico * produto.quantidade; // Multiplica o valor pela quantidade
-    }, 0);
-  }, [produtosCompra]);
-
-  useEffect(() => {
-    setTotal(calcularTotal());
-  }, [produtosCompra, calcularTotal]);
-
-  // CALCULAR O TOTAL DA COMPRA
-  const cancelarVenda = () => {
-    setProdutosCompra([]);
-    localStorage.removeItem("produtosCompra");
-    toast.success("🛒 Venda cancelada com sucesso!", {
-      // Exibe o toast
-      position: "top-right",
-      autoClose: 4000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      theme: "colored",
-    });
-  };
-
   return (
     <div className="ContainerMerc">
       <img src={logo} alt="Logo da marca" className="ImgMerc" />
-      <div className="CardBox">
-        {caixaAberto ? <h2>CAIXA ABERTO</h2> : <h2>CAIXA FECHADO</h2>}
-      </div>
-      {/* BOTÕES DO MODAL */}
+      {/* MODAL SCROLL */}
       <div className="ScrollContainer">
+        <Box className={`CardBox ${caixaAberto ? "Box_Open" : "Box_Close"}`}>
+          {caixaAberto ? (
+            <text className="TextBox">CAIXA ABERTO</text>
+          ) : (
+            <text className="TextBox">CAIXA FECHADO</text>
+          )}
+        </Box>
         <Button
           sx={{
             padding: "12px",
@@ -448,6 +461,8 @@ export default function CaixaMercadinho() {
                   value={codigo}
                   onChange={(e) => setCodigo(e.target.value)}
                 />
+
+                {produtoDuplicado && <p>ESTE CÓDIGO ESTÁ SENDO UTILIZADO.</p>}
                 <input
                   className="InputModalAdcProd"
                   placeholder="Produto"
@@ -509,7 +524,7 @@ export default function CaixaMercadinho() {
           </Box>
         </Modal>
       </div>
-      {/* PAINEL DE PRODUTOS EM CAIXA ABERTO (LEFTPAINEL) */}
+      {/* PAINEL CARRINHO DE COMPRAS (LEFTPAINEL) */}
       <div className="Screen">
         <div className="LeftPanel">
           <h2>"Até aqui o Senhor nos ajudou". 1 Samuel 7:12</h2>
@@ -521,6 +536,7 @@ export default function CaixaMercadinho() {
                   <th className="Th">Produto</th>
                   <th className="Th">Quantidade</th>
                   <th className="Th">Valor</th>
+                  <th className="Th_Delete">Deletar</th>
                 </tr>
               </thead>
               <tbody>
@@ -534,6 +550,20 @@ export default function CaixaMercadinho() {
                         ? `R$ ${parseFloat(item.value).toFixed(2)}`
                         : "Valor Indisponível"}
                     </td>
+                    <td className="Td_Delete">
+                      <button
+                        className="Btn_Delete"
+                        onClick={() => removerProdutoDoCarrinho(item.uuid)}
+                      >
+                        <DeleteIcon
+                          sx={{
+                            color: "red",
+                            fontSize: "30px",
+                            justifyItems: "center",
+                          }}
+                        />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -543,7 +573,7 @@ export default function CaixaMercadinho() {
             <h3>Total: R$ {total.toFixed(2)}</h3>
           </div>
         </div>
-        {/* PAINEL PARA ADICIONAR & FINALIZAR COMPRA EM CAIXA ABERTO (RIGHTPAINEL) */}
+        {/* PAINEL FINALIZAR VENDA (RIGHTPAINEL) */}
         <div className="RightPanel">
           <h2>Adicionar Produto</h2>
           <input

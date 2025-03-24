@@ -30,7 +30,8 @@
     "react-toastify": "^11.0.5",
     "react-ui-cards": "^3.1.0",
     "styled-components": "^6.1.15",
-    "typeorm": "^0.3.21"
+    "typeorm": "^0.3.21",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
