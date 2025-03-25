@@ -82,7 +82,6 @@ export default function SalesPage() {
   const gerarExcel = () => {
     const data = filteredSales.flatMap((sale) => {
       let valorTotal = calcularValorTotal(sale).toLocaleString("pt-BR", {
-        style: "currency",
         currency: "BRL",
       });
 
