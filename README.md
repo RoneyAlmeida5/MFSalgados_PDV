@@ -22,31 +22,31 @@ simples e ágil, facilitando as operações e garantindo mais praticidade para o
   <img alt="Img projeto1" src="./public/mf1.jpg" width="100%">
 </p>
 <p align="center">
-  <img alt="Img projeto2" src="./public/mf2.jpg" width="100%">
+  <img alt="Img projeto2" src="./public/mf2.jpeg" width="100%">
 </p>
 <p align="center">
-  <img alt="Img projeto3" src="./public/mf3.jpg" width="100%">
+  <img alt="Img projeto3" src="./public/mf3.jpeg" width="100%">
 </p>
 <p align="center">
-  <img alt="Img projeto4" src="./public/mf4.jpg" width="100%">
+  <img alt="Img projeto4" src="./public/mf4.jpeg" width="100%">
 </p>
 <p align="center">
-  <img alt="Img projeto5" src="./public/mf5.jpg" width="100%">
+  <img alt="Img projeto5" src="./public/mf5.jpeg" width="100%">
 </p>
 <p align="center">
-  <img alt="Img projeto5" src="./public/mf6.jpg" width="100%">
+  <img alt="Img projeto5" src="./public/mf6.jpeg" width="100%">
 </p>
 <p align="center">
-  <img alt="Img projeto5" src="./public/mf7.jpg" width="100%">
+  <img alt="Img projeto5" src="./public/mf7.jpeg" width="100%">
 </p>
 <p align="center">
-  <img alt="Img projeto5" src="./public/mf8.jpg" width="100%">
+  <img alt="Img projeto5" src="./public/mf8.jpeg" width="100%">
 </p>
 <p align="center">
-  <img alt="Img projeto5" src="./public/mf9.jpg" width="100%">
+  <img alt="Img projeto5" src="./public/mf9.jpeg" width="100%">
 </p>
 <p align="center">
-  <img alt="Img projeto5" src="./public/mf10.jpg" width="100%">
+  <img alt="Img projeto5" src="./public/mf10.jpeg" width="100%">
 </p>
 
 ## 🚀 Tecnologias
