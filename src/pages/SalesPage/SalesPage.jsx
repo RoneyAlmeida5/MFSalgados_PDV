@@ -25,11 +25,49 @@ import {
 export default function SalesPage() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [globalFilter, setGlobalFilter] = useState("");
   const navigation = useNavigate();
 
   // CRIAR PÁGINAÇÃO & FILTRO
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5); // ex: 5 vendas por página
+
+  // VALOR TOTAL DA VENDA
+  const calcularValorTotal = (sale) => {
+    return sale.salesProducts.reduce((total, item) => {
+      return total + item.product.value * item.quantity;
+    }, 0);
+  };
+
+  // Função para filtrar as vendas
+  const filteredSales = sales.filter((sale) => {
+    const valorTotal = calcularValorTotal(sale).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+
+    return sale.salesProducts.some((item) => {
+      const searchString = globalFilter.toLowerCase();
+
+      return (
+        String(sale.id).toLowerCase().includes(searchString) ||
+        sale.user.name.toLowerCase().includes(searchString) ||
+        sale.payment.name.toLowerCase().includes(searchString) ||
+        new Date(sale.date_sale)
+          .toLocaleDateString()
+          .toLowerCase()
+          .includes(searchString) ||
+        item.product.name.toLowerCase().includes(searchString) ||
+        String(item.quantity).toLowerCase().includes(searchString) ||
+        valorTotal.toLowerCase().includes(searchString)
+      );
+    });
+  });
+
+  const salesPaginated = filteredSales.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -40,30 +78,24 @@ export default function SalesPage() {
     setPage(0); // volta pra página 1 quando mudar a quantidade
   };
 
-  const salesPaginated = sales.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
-  // VALOR TOTAL DA VENDA
-  const calcularValorTotal = (sale) => {
-    return sale.salesProducts.reduce((total, item) => {
-      return total + item.product.value * item.quantity;
-    }, 0);
-  };
-
   // GERAR EXCEL
   const gerarExcel = () => {
-    const data = sales.flatMap((sale) =>
-      sale.salesProducts.map((item) => ({
+    const data = filteredSales.flatMap((sale) => {
+      let valorTotal = calcularValorTotal(sale).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+
+      return sale.salesProducts.map((item, index) => ({
         "ID da Venda": sale.id,
         Usuário: sale.user.name,
         Pagamento: sale.payment.name,
         Data: new Date(sale.date_sale).toLocaleDateString(),
         Produto: item.product.name,
         Quantidade: item.quantity,
-      }))
-    );
+        Valortotal: index === 0 ? valorTotal : "", // Preenche valor total apenas na primeira linha
+      }));
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -108,6 +140,14 @@ export default function SalesPage() {
       </Typography>
       {/*HEADER DOS BUTTON*/}
       <div className="ScrollContainerSales">
+        <input
+          className="Input_Filter"
+          value={globalFilter}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Filtrar todas as colunas..."
+          fullWidth
+        />
+
         <Tooltip
           title="Baixar planilha Excel"
           arrow
