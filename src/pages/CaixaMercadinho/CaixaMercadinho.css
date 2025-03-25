@@ -185,6 +185,21 @@ p {
 }
 
 /* INICIO DO MODAL DE LISTA DE PRODUTOS*/
+.Box_ListProd {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 .ScreenModalListProd {
   display: flex;
   flex-direction: row;
@@ -242,6 +257,20 @@ p {
   text-align: left;
   border: 1px solid #000000;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.ThModelListProd_Edit {
+  border: 1px solid #000000;
+  background: linear-gradient(135deg, #00258a 0%, #0134a0 50%, #0e63ed 100%);
+  width: 800x;
+  color: rgb(255, 255, 255);
+  padding: 10px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.TdModelListProd_Edit {
+  background-color: #fff;
+  padding: 10px;
+  text-align: center;
+  border: 0.5px solid #000000;
 }
 
 /* PAINEL LEFT */

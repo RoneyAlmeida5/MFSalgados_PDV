@@ -12,6 +12,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import CalculateIcon from "@mui/icons-material/Calculate";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
@@ -30,6 +31,9 @@ export default function CaixaMercadinho() {
   const [adcProdOpen, setAdcProdOpen] = useState(false);
   const [produtosLista, setProdutosLista] = useState([]);
   const [listProdOpen, setListProdOpen] = useState(false);
+  // EDITAR PRODUTOS
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [idEditando, setIdEditando] = useState(null);
   // LISTA DE COMPRAS POR UUID
   const [produtosCompra, setProdutosCompra] = useState([]);
   const [uuidSelecionado, setUuidSelecionado] = useState("");
@@ -52,35 +56,99 @@ export default function CaixaMercadinho() {
     setCaixaAberto(produtosCompra.length > 0);
   }, [produtosCompra]);
 
-  // MODAL ADICIONAR PRODUTOS
+  // MODAL ADICIONAR PRODUTOS & EDITAR PRODUTOS
   const handleOpenAdcProd = () => setAdcProdOpen(true);
-  const handleCloseAdcProd = () => setAdcProdOpen(false);
+  const handleCloseAdcProd = () => {
+    setAdcProdOpen(false); // Fecha o modal
+    setModoEdicao(false); // Reseta o modo de edição
+    setIdEditando(null); // Limpa o produto sendo editado
+  };
+  const editarProduto = (produto) => {
+    setIdEditando(produto.id); // Salva o UUID do produto para que possamos atualizar no backend
+    setCodigo(produto.uuid); // Preenche os campos do modal com as informações do produto
+    setProduto(produto.name);
+    setDescricao(produto.description);
+    setValor(produto.value);
+    setModoEdicao(true); // Altera o estado para o modo de edição
+    setAdcProdOpen(true); // Abre o modal de edição
+  };
   const adicionarProduto = async () => {
     if (codigo && produto && valor) {
+      setIsLoading(true);
+
       try {
-        const response = await api.post("/products", {
-          uuid: codigo,
-          name: produto,
-          description: descricao,
-          value: parseFloat(valor),
-        });
-        setProdutosLista([...produtosLista, response.data]); // Adiciona o produto retornado pela API
+        if (modoEdicao && idEditando) {
+          // Edição
+          const response = await api.put(`/products/${idEditando}`, {
+            uuid: codigo,
+            name: produto,
+            description: descricao,
+            value: parseFloat(valor),
+          });
+
+          const produtosAtualizados = produtosLista.map((p) =>
+            p.id === idEditando ? response.data : p
+          );
+          setProdutosLista(produtosAtualizados);
+          setModoEdicao(false);
+          setIdEditando(null);
+
+          toast.success("✏️ Produto editado com sucesso!", {
+            position: "top-right",
+            autoClose: 4000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+          });
+        } else {
+          // Adição
+          const response = await api.post("/products", {
+            uuid: codigo,
+            name: produto,
+            description: descricao,
+            value: parseFloat(valor),
+          });
+
+          setProdutosLista([...produtosLista, response.data]);
+
+          toast.success("🛒 Produto adicionado com sucesso!", {
+            position: "top-right",
+            autoClose: 4000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+          });
+        }
+
+        // Limpa o formulário
         setCodigo("");
         setProduto("");
         setValor("");
         setDescricao("");
+        setAdcProdOpen(false);
       } catch (error) {
-        console.error("Erro ao adicionar produto:", error);
+        toast.error("❌ Erro ao salvar produto!", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "colored",
+        });
+      } finally {
+        setIsLoading(false);
       }
     }
   };
+
   // PRODUTO DUPLICADO (ERRO)
   useEffect(() => {
-    const produtoJaExiste = produtosLista.some(
-      (produto) => produto.uuid === codigo
+    const codigoDuplicado = produtosLista.some(
+      (p) => p.uuid === codigo && (!modoEdicao || p.id !== idEditando)
     );
-    setProdutoDuplicado(produtoJaExiste);
-  }, [codigo, produtosLista]);
+    setProdutoDuplicado(codigoDuplicado);
+  }, [codigo, produtosLista, modoEdicao, idEditando]);
 
   // MODAL LISTA DE PRODUTOS
   const handleCloseListProd = () => setListProdOpen(false);
@@ -88,9 +156,9 @@ export default function CaixaMercadinho() {
     setListProdOpen(true);
   };
   useEffect(() => {
-    const produtosSalvos = localStorage.getItem("produtosCompra");
+    const produtosSalvos = localStorage.getItem("produtosLista");
     if (produtosSalvos) {
-      setProdutosCompra(JSON.parse(produtosSalvos));
+      setProdutosLista(JSON.parse(produtosSalvos));
     }
   }, []);
   useEffect(() => {
@@ -166,6 +234,25 @@ export default function CaixaMercadinho() {
     setQuantidade(1);
   };
 
+  // FUNÇÃO PARA DELETAR PRODUTO
+  const removerProduto = async (idProduto) => {
+    try {
+      await api.delete(`/products/${idProduto}`); // <- Passe o id correto aqui
+
+      const produtosAtualizados = produtosLista.filter(
+        (produto) => produto.id !== idProduto
+      );
+      setProdutosLista(produtosAtualizados);
+
+      localStorage.setItem(
+        "produtosLista",
+        JSON.stringify(produtosAtualizados)
+      );
+    } catch (error) {
+      console.error("Erro ao remover produto:", error);
+    }
+  };
+
   // FUNÇÃO PARA DELETAR PRODUTO DO CARRINHO
   const removerProdutoDoCarrinho = (idProduto) => {
     const produtosAtualizados = produtosCompra.filter(
@@ -233,8 +320,6 @@ export default function CaixaMercadinho() {
       const user = jwtDecode(token);
       const user_id = user.sub;
 
-      console.log("ID extraído do token:", user_id);
-
       const venda = {
         userId: user_id,
         paymentId: formaPagamento,
@@ -244,7 +329,6 @@ export default function CaixaMercadinho() {
           value: parseFloat(produto.value),
         })),
       };
-      console.log("Enviando dados para o backend:", venda);
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await api.post("/sales/createSales", venda, {
@@ -454,14 +538,13 @@ export default function CaixaMercadinho() {
           <Box className="Box">
             <div className="ScreenModalAdcProd">
               <div className="PainelModalAdcProd">
-                <h2>ADICIONAR PRODUTOS</h2>
+                <h2>{modoEdicao ? "EDITAR PRODUTO" : "ADICIONAR PRODUTO"}</h2>
                 <input
                   className="InputModalAdcProd"
                   placeholder="Código"
                   value={codigo}
                   onChange={(e) => setCodigo(e.target.value)}
                 />
-
                 {produtoDuplicado && <p>ESTE CÓDIGO ESTÁ SENDO UTILIZADO.</p>}
                 <input
                   className="InputModalAdcProd"
@@ -482,8 +565,18 @@ export default function CaixaMercadinho() {
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
                 />
-                <button className="Btn" onClick={adicionarProduto}>
-                  Adicionar
+                <button
+                  className="Btn"
+                  onClick={adicionarProduto}
+                  disabled={produtoDuplicado || isLoading}
+                >
+                  {isLoading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : modoEdicao ? (
+                    "Salvar Edição"
+                  ) : (
+                    "Adicionar Produto"
+                  )}
                 </button>
               </div>
             </div>
@@ -491,7 +584,7 @@ export default function CaixaMercadinho() {
         </Modal>
         {/* MODAL DE LISTA DE PRODUTOS */}
         <Modal open={listProdOpen} onClose={handleCloseListProd}>
-          <Box className="Box">
+          <Box className="Box_ListProd">
             <div className="ScreenModalListProd">
               <div className="PainelModalListProd">
                 <h2>PRODUTOS</h2>
@@ -502,6 +595,8 @@ export default function CaixaMercadinho() {
                       <th className="ThModelListProd">Produto</th>
                       <th className="ThModelListProd">Valor</th>
                       <th className="ThModelListProd">Descrição</th>
+                      <th className="ThModelListProd_Edit">Editar</th>
+                      <th className="ThModelListProd_Edit">Deletar</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -515,6 +610,53 @@ export default function CaixaMercadinho() {
                             : "Valor Indisponível"}
                         </td>
                         <td className="TdModelListProd">{item.description}</td>
+                        {/*EDITAR PRODUTO*/}
+                        <Tooltip
+                          title="Editar produto"
+                          arrow
+                          componentsProps={{
+                            tooltip: {
+                              sx: {
+                                fontSize: "1rem", // aumenta a fonte
+                                backgroundColor: "#333", // opcional
+                                color: "#fff", // opcional
+                                padding: "8px 12px", // mais espaço
+                              },
+                            },
+                          }}
+                        >
+                          <td className="TdModelListProd_Edit">
+                            <button
+                              className="Btn_Delete"
+                              onClick={() => editarProduto(item)}
+                            >
+                              <EditIcon
+                                sx={{
+                                  color: "black",
+                                  fontSize: "27px",
+                                  justifyItems: "center",
+                                }}
+                              />
+                            </button>
+                          </td>
+                        </Tooltip>
+                        {/*EXCLUIR PRODUTO*/}
+                        <Tooltip>
+                          <td className="TdModelListProd_Edit">
+                            <button
+                              className="Btn_Delete"
+                              onClick={() => removerProduto(item.id)}
+                            >
+                              <DeleteIcon
+                                sx={{
+                                  color: "red",
+                                  fontSize: "30px",
+                                  justifyItems: "center",
+                                }}
+                              />
+                            </button>
+                          </td>
+                        </Tooltip>
                       </tr>
                     ))}
                   </tbody>

@@ -19,6 +19,7 @@ import {
   Typography,
   CircularProgress,
   Tooltip,
+  TablePagination,
 } from "@mui/material";
 
 export default function SalesPage() {
@@ -26,6 +27,23 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigate();
 
+  // CRIAR PÁGINAÇÃO & FILTRO
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5); // ex: 5 vendas por página
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // volta pra página 1 quando mudar a quantidade
+  };
+
+  const salesPaginated = sales.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
   // GERAR EXCEL
   const gerarExcel = () => {
     const data = sales.flatMap((sale) =>
@@ -123,7 +141,7 @@ export default function SalesPage() {
         </Tooltip>
       </div>
       {/*LOGICA TABELA VENDAS*/}
-      <div>
+      <div className="ContainerSales_Table">
         {loading ? (
           <div
             style={{
@@ -145,7 +163,6 @@ export default function SalesPage() {
           <TableContainer
             component={Paper}
             sx={{
-              maxWidth: "90%",
               margin: "20px auto",
               borderRadius: 2,
               boxShadow: 3,
@@ -181,7 +198,7 @@ export default function SalesPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sales.map((sale, index) => (
+                {salesPaginated.map((sale, index) => (
                   <React.Fragment key={sale.id}>
                     {sale.salesProducts.map((item, subIndex) => (
                       <TableRow
@@ -207,6 +224,36 @@ export default function SalesPage() {
             </Table>
           </TableContainer>
         )}
+        <TablePagination
+          component="div"
+          count={sales.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 15]}
+          labelRowsPerPage="Linhas por página"
+          sx={{
+            marginBottom: "15px",
+            background:
+              "linear-gradient(135deg, #00258a 0%, #0134a0 50%, #0e63ed 100%)",
+            color: "white",
+            borderRadius: "0 0 12px 12px",
+            "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
+              {
+                color: "white",
+              },
+            "& .MuiInputBase-root": {
+              color: "white",
+            },
+            "& .MuiSvgIcon-root": {
+              color: "white",
+            },
+            "& .MuiTablePagination-actions button": {
+              color: "white",
+            },
+          }}
+        />
       </div>
     </div>
   );

@@ -9,22 +9,29 @@ body {
   width: 100%;
 }
 
-.ScrollContainerSales {
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  width: 88%;
-  gap: 10px;
-}
-
 .ContainerSales {
   min-height: 100vh; /* Faz com que o fundo ocupe a altura total da tela */
   background: linear-gradient(135deg, #00258a 0%, #0134a0 50%, #0e63ed 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* Mantém o conteúdo no topo */
   font-family: "Montserrat", sans-serif;
+}
+.ContainerSales_Table {
+  width: 180vh;
+  background: linear-gradient(135deg, #00258a 0%, #0134a0 50%, #0e63ed 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "Montserrat", sans-serif;
+}
+
+.ScrollContainerSales {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 180vh;
+  gap: 10px;
 }
 
 .ImgSales {
