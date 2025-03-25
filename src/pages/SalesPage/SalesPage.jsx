@@ -137,16 +137,15 @@ export default function SalesPage() {
       >
         Histórico de Vendas
       </Typography>
+      <input
+        className="Input_Filter"
+        value={globalFilter}
+        onChange={(e) => setGlobalFilter(e.target.value)}
+        placeholder="Filtrar todas as colunas..."
+        fullWidth
+      />
       {/*HEADER DOS BUTTON*/}
       <div className="ScrollContainerSales">
-        <input
-          className="Input_Filter"
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Filtrar todas as colunas..."
-          fullWidth
-        />
-
         <Tooltip
           title="Baixar planilha Excel"
           arrow
