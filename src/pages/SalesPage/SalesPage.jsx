@@ -44,6 +44,14 @@ export default function SalesPage() {
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
+
+  // VALOR TOTAL DA VENDA
+  const calcularValorTotal = (sale) => {
+    return sale.salesProducts.reduce((total, item) => {
+      return total + item.product.value * item.quantity;
+    }, 0);
+  };
+
   // GERAR EXCEL
   const gerarExcel = () => {
     const data = sales.flatMap((sale) =>
@@ -195,6 +203,9 @@ export default function SalesPage() {
                   <TableCell sx={{ color: "white", fontWeight: "bold" }}>
                     Quantidade
                   </TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                    Valor Total
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -202,7 +213,7 @@ export default function SalesPage() {
                   <React.Fragment key={sale.id}>
                     {sale.salesProducts.map((item, subIndex) => (
                       <TableRow
-                        key={`${sale.id}-${subIndex}`}
+                        key={`<span class="math-inline">{sale.id}-<span>{subIndex}`}
                         sx={{
                           backgroundColor:
                             index % 2 === 0 ? "#0044ff56" : "white",
@@ -216,6 +227,14 @@ export default function SalesPage() {
                         </TableCell>
                         <TableCell>{item.product.name}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
+                        {subIndex === 0 && (
+                          <TableCell rowSpan={sale.salesProducts.length}>
+                            {calcularValorTotal(sale).toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </React.Fragment>
