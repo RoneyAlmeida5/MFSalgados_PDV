@@ -33,12 +33,32 @@ simples e ágil, facilitando as operações e garantindo mais praticidade para o
 <p align="center">
   <img alt="Img projeto5" src="./public/mf5.jpg" width="100%">
 </p>
+<p align="center">
+  <img alt="Img projeto5" src="./public/mf6.jpg" width="100%">
+</p>
+<p align="center">
+  <img alt="Img projeto5" src="./public/mf7.jpg" width="100%">
+</p>
+<p align="center">
+  <img alt="Img projeto5" src="./public/mf8.jpg" width="100%">
+</p>
+<p align="center">
+  <img alt="Img projeto5" src="./public/mf9.jpg" width="100%">
+</p>
+<p align="center">
+  <img alt="Img projeto5" src="./public/mf10.jpg" width="100%">
+</p>
 
 ## 🚀 Tecnologias
 
 Este projeto foi desenvolvido utilizando as seguintes tecnologias, bibliotecas e etc:
 
 - React e CSS
+- Nestjs
+- Nodejs
+- Docker
+- MySQL
+- Typescript
 - JavaScript
 - Git e Github
 - React Router
